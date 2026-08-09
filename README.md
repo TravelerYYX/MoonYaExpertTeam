@@ -98,21 +98,90 @@ computer_observe  →  computer_interact  →  computer_complete
 
 `target` 必须是语义目标（控件名/业务对象），**禁止提交绝对像素坐标**。这一约束确保操作可验证、可回放、不受 DPI / 分辨率 / 窗口位置影响。
 
-#### 三级定位兜底
+#### 三级操控兜底（GUI 元素级 → 视觉定位 → 像素物理回退）
+
+桌面操控按精度从高到低分三层，`DesktopComputerService` 编排调度，**模型只提供语义目标，GUI/VLM 坐标永远不逃逸出进程**：
 
 ```
-① UIA 原生 Pattern（首选，最精准）
-    ↓ 不可用时
+① UIA GUI 元素级自动化（主路径，最精准）
+    UiAutomationService · System.Windows.Automation
+    FindElement → ClickElement / SetText / GetText → Pattern 调用
+    ↓ 元素不可达时
 ② VLM 安全视觉定位（SoM 标记 + 两阶段返回 mark_id）
-    ↓ 不可用时
-③ 键盘语义降级（key_chord / set_value / invoke，仍禁止坐标）
+    DesktopComputerService.VisualInteract · CreateVisualMarks
+    ↓ 视觉仍不可用时
+③ SendInput 像素物理回退（MouseClick / KeyboardType / KeyPress）
+    ComputerUseService · user32.dll P/Invoke
 ```
 
-VLM 视觉定位的安全策略：
+##### ① UIA GUI 元素级自动化（主路径）
 
-- 第一阶段返回归一化候选框 + 标签 + confidence（**不返回屏幕绝对坐标**）
-- 运行时绘制 SoM（Set of Marks）后，第二阶段返回 `mark_id` + confidence
-- confidence < 0.7、窗口变化、快照过期、目标不唯一 → 重新观察，最多三次
+`UiAutomationService` 基于 Windows UI Automation API，通过**控件树**和 **Pattern** 操控 GUI 元素——这是月雅专家团的核心创新：**不点坐标，点控件**。
+
+| API | 作用 |
+| --- | --- |
+| `FindElement(automationId, name, controlType)` | 按 automationId 精确匹配 / name 模糊匹配 / 控件类型匹配，找到后缓存并返回 `element_id` |
+| `GetUiTree(rootElementId, maxDepth, format, maxNodes)` | 获取 UI 控件树，支持 text/json 格式，深度与节点数限制 |
+| `ClickElement(elementId)` | 调用 `InvokePattern` 点击元素，**并验证真实结果**（不把"未抛异常"误报为已生效） |
+| `SetText(elementId, text)` | 优先 `ValuePattern.SetValue`，回退其他方式 |
+| `GetText(elementId)` | 优先 `TextPattern.DocumentRange.GetText`，回退 `ValuePattern.Current.Value`，再回退 `element.Current.Name` |
+| `CaptureUiSnapshot(...)` | UI 快照，含控件属性与可用 Pattern |
+
+**支持的 17 种 UIA Pattern**：
+
+| Pattern | 用途 |
+| --- | --- |
+| `Invoke` | 调用按钮/菜单项 |
+| `Toggle` | 切换复选框/单选框 |
+| `Value` | 设置/读取文本框值 |
+| `Text` | 读取富文本内容 |
+| `Selection` / `SelectionItem` | 选择列表/下拉项 |
+| `Scroll` | 滚动区域 |
+| `RangeValue` | 调节滑块/数值范围 |
+| `ExpandCollapse` | 展开/折叠树节点 |
+| `Grid` / `GridItem` | 表格导航 |
+| `Table` / `TableItem` | 表格操作 |
+| `Dock` | 停靠面板 |
+| `Transform` | 移动/缩放/旋转 |
+| `MultipleView` | 切换视图 |
+| `Window` | 窗口操作 |
+| `ItemContainer` | 虚拟容器项管理 |
+
+**为什么 UIA 是主路径**：
+
+- **精准** — 直接定位语义控件，不受 DPI / 分辨率 / 窗口位置影响
+- **可验证** — `ClickElement` 检查真实结果属性，不只看 InvokePattern 是否抛异常
+- **可回放** — 同一 `element_id` 可复用（元素缓存 `ElementCache`）
+- **无副作用** — 不模拟鼠标移动，不干扰用户当前操作
+
+##### ② VLM 安全视觉定位
+
+UIA 元素不可达时（如自绘 UI、跨进程 Chromium 控件），启用视觉定位：
+
+- 第一阶段：返回归一化候选框 + 标签 + confidence（**不返回屏幕绝对坐标**）
+- 运行时绘制 SoM（Set of Marks）：`CreateVisualMarks` 在截图上画编号方框
+- 第二阶段：返回 `mark_id` + confidence，`VisualInteract` 据此执行
+- confidence < 0.7、窗口变化、快照过期（30 秒租约）、目标不唯一 → 重新观察，最多三次
+- **坐标不逃逸** — GUI/VLM 坐标永远不离开 `DesktopComputerService` 进程
+
+##### ③ SendInput 像素物理回退
+
+UIA 与 VLM 均不可用时，`ComputerUseService` 通过 `user32.dll` 的 `SendInput` API 执行像素级物理操作（`physical_fallback = true`）：
+
+| API | 作用 |
+| --- | --- |
+| `TakeScreenshot(target)` | 截屏（window/screen），Anthropic 规范长边 ≤1568px、总像素 ≤1.15MP |
+| `TakeWindowScreenshot(hwnd)` | 指定窗口截屏（不回退全屏，防止无关窗口成为证据） |
+| `MouseMove(x, y)` | 鼠标移动（绝对坐标模式 `MOUSEEVENTF_ABSOLUTE\|MOVE`） |
+| `MouseClick(x, y, button, click)` | 鼠标点击（single/double，支持 left/right） |
+| `MouseScroll(delta)` | 滚轮滚动 |
+| `MouseDrag(from, to, points)` | 拖拽（支持自定义路径点） |
+| `MouseHold(x, y, button, duration)` | 按住鼠标 |
+| `FocusWindow(hwnd)` | 聚焦窗口 |
+| `KeyboardType(text)` | 键盘输入文本（Unicode 字符） |
+| `KeyPress(keys)` | 组合键（如 `Ctrl+S`） |
+
+> 这一层是**最后的物理手段**，标记 `physical_fallback`，上层会加强验证。
 
 #### 严格安全策略（CuPolicyCatalog）
 
@@ -261,8 +330,15 @@ VLM 视觉定位的安全策略：
 │   ├── assets/office/                     # 办公室精灵图（坐姿/行走/色键）
 │   └── tests/                             # 契约测试与冒烟测试
 ├── MoonYa-Win/MoonYa-Solution/            # C# .NET Windows 桌面端
+│   ├── MoonYa/Services/
+│   │   ├── UiAutomationService.cs         # UIA GUI 元素级自动化（CU 主路径）
+│   │   ├── DesktopComputerService.cs      # 桌面业务 API（编排 UIA/VLM/SendInput）
+│   │   ├── ComputerUseService.cs          # SendInput 像素级物理回退
+│   │   ├── BrowserAutomationService.cs    # 浏览器自动化服务
+│   │   ├── ManagedVisualVerifier.cs       # 视觉验证器
+│   │   └── ...
 │   ├── MoonYa.CuContracts/                # Computer Use 契约
-│   └── ...
+│   └── MoonYa.CuFixture/                  # CU 固定装置与场景测试
 └── README.md
 ```
 
