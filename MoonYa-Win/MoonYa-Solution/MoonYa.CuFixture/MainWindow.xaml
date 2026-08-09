@@ -1,0 +1,75 @@
+<Window x:Class="MoonYa.CuFixture.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MoonYa.CuFixture"
+        Title="MoonYa CU Offline Fixture" Width="920" Height="720"
+        WindowStartupLocation="CenterScreen">
+  <Grid Margin="16">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="1.05*" />
+      <ColumnDefinition Width="16" />
+      <ColumnDefinition Width="0.95*" />
+    </Grid.ColumnDefinitions>
+    <StackPanel Grid.Column="0">
+      <TextBlock Text="原生 UIA / Pattern" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12" />
+      <Button x:Name="InvokeButton" Content="执行原生操作" Height="38" Margin="0,0,0,8"
+              AutomationProperties.Name="执行原生操作按钮"
+              AutomationProperties.AutomationId="Fixture.Invoke"
+              ToolTip="可安全关闭的提示浮层"
+              Click="InvokeButton_Click" />
+      <TextBox x:Name="ValueInput" Height="38" Margin="0,0,0,8"
+               AutomationProperties.Name="测试文本输入框"
+               AutomationProperties.AutomationId="Fixture.Value" />
+      <CheckBox x:Name="ToggleInput" Content="启用测试选项" Margin="2,6,0,12"
+                AutomationProperties.Name="启用测试选项"
+                AutomationProperties.AutomationId="Fixture.Toggle" />
+      <ComboBox x:Name="SelectionInput" Height="36" SelectedIndex="0" Margin="0,0,0,8"
+                AutomationProperties.Name="测试选择框"
+                AutomationProperties.AutomationId="Fixture.Selection">
+        <ComboBoxItem x:Name="OptionA" Content="选项 A" AutomationProperties.AutomationId="Fixture.OptionA" />
+        <ComboBoxItem x:Name="OptionB" Content="选项 B" AutomationProperties.AutomationId="Fixture.OptionB" />
+        <ComboBoxItem x:Name="OptionC" Content="选项 C" AutomationProperties.AutomationId="Fixture.OptionC" />
+      </ComboBox>
+      <Expander x:Name="ExpanderInput" Header="测试展开区域" Margin="0,0,0,8"
+                AutomationProperties.Name="测试展开区域"
+                AutomationProperties.AutomationId="Fixture.Expander">
+        <Border Background="#EEF4FF" Padding="12">
+          <TextBlock Text="展开状态已经生效" />
+        </Border>
+      </Expander>
+      <DockPanel Margin="0,4,0,8">
+        <Button x:Name="ModalButton" Content="打开敏感模态框" Height="36" Padding="12,0" Click="OpenModal_Click"
+                AutomationProperties.Name="打开权限确认对话框"
+                AutomationProperties.AutomationId="Fixture.Modal" />
+        <Button Content="移动窗口使裁剪过期" Height="36" Padding="12,0" Margin="8,0,0,0" Click="MoveWindow_Click"
+                AutomationProperties.Name="移动测试窗口"
+                AutomationProperties.AutomationId="Fixture.MoveWindow" />
+      </DockPanel>
+      <TextBlock x:Name="NativeStatus" Text="等待操作" Foreground="#40516B" Margin="2,2,0,8"
+                 AutomationProperties.AutomationId="Fixture.Status" />
+      <TextBlock Text="虚拟列表（500 项）" FontWeight="SemiBold" Margin="0,4,0,6" />
+      <ListView x:Name="VirtualList" Height="260"
+                VirtualizingStackPanel.IsVirtualizing="True"
+                VirtualizingStackPanel.VirtualizationMode="Recycling"
+                ScrollViewer.CanContentScroll="True"
+                AutomationProperties.Name="虚拟测试列表"
+                AutomationProperties.AutomationId="Fixture.VirtualList" />
+    </StackPanel>
+
+    <StackPanel Grid.Column="2">
+      <TextBlock Text="自绘 / 无业务 UIA 节点" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12" />
+      <TextBlock Text="WPF 自绘区域：内部按钮没有独立 UIA 节点，用于触发 VLM。" TextWrapping="Wrap" Margin="0,0,0,6" />
+      <local:CustomDrawnSurface Height="190" Margin="0,0,0,16"
+                                AutomationProperties.Name="WPF 自绘测试区域"
+                                AutomationProperties.AutomationId="Fixture.CustomDrawn" />
+      <TextBlock Text="原生 Win32 自绘子 HWND：用于无 Provider/FromPoint 场景。" TextWrapping="Wrap" Margin="0,0,0,6" />
+      <Border BorderBrush="#C8D2E2" BorderThickness="1" Height="190">
+        <local:Win32CanvasHost AutomationProperties.Name="Win32 自绘测试区域"
+                               AutomationProperties.AutomationId="Fixture.Win32Canvas" />
+      </Border>
+      <TextBlock Margin="0,18,0,4" FontWeight="SemiBold" Text="人工显示器场景" />
+      <TextBlock Text="把本窗口拖到不同 DPI 或负坐标显示器，随后点击“移动窗口使裁剪过期”，用于验证截图版本、DPI 与物理坐标复核。"
+                 TextWrapping="Wrap" Foreground="#5E6A7D" />
+    </StackPanel>
+  </Grid>
+</Window>

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "scenarios": [
+    { "id": "uia_invoke", "target": "执行原生操作按钮", "operation": "invoke", "expected_method": "InvokePattern" },
+    { "id": "uia_value", "target": "测试文本输入框", "operation": "set_value", "value": "MoonYa", "expected_method": "ValuePattern" },
+    { "id": "uia_toggle", "target": "启用测试选项", "operation": "toggle", "expected_method": "TogglePattern" },
+    { "id": "uia_select", "target": "选项 B", "operation": "select", "expected_method": "SelectionItemPattern" },
+    { "id": "uia_expand", "target": "测试展开区域", "operation": "expand", "expected_method": "ExpandCollapsePattern" },
+    { "id": "virtualized_item", "target": "虚拟项目 490", "operation": "select", "requires": ["VirtualizedItemPattern.Realize", "ScrollItemPattern.ScrollIntoView"] },
+    { "id": "sensitive_modal", "target": "打开权限确认对话框", "expected_failure_code": "blocked_by_modal" },
+    { "id": "wpf_self_drawn", "target": "点击视觉目标", "expected_layer": "vlm" },
+    { "id": "win32_self_drawn", "target": "Click Win32 target", "expected_layer": "vlm" },
+    { "id": "stale_crop", "target": "移动测试窗口", "expected_failure_codes": ["window_changed", "crop_stale", "dpi_changed"] }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "host": "127.0.0.1",
+  "backend_url": "http://localhost",
+  "api_port": 58900,
+  "crawler_port": 58901,
+  "search_port": 58902,
+  "execution_port": 58903,
+  "lsp_port": 58906,
+  "execution_relay_timeout_ms": 110000,
+  "python_service": {
+    "candidate_roots": [
+      ".",
+      "../../../../../../../"
+    ],
+    "config_candidate_paths": [
+      "python_service/service_config.json",
+      "MoonYa-Python/service_config.json"
+    ],
+    "script_candidate_paths": [
+      "python_service/main.py",
+      "MoonYa-Python/main.py"
+    ],
+    "python_candidates": [
+      "MoonYa-Python/.venv/Scripts/python.exe",
+      "python/python.exe",
+      "python3",
+      "python"
+    ]
+  },
+  "grep": {
+    "download_directory": "%LOCALAPPDATA%\\MoonYa\\tools",
+    "download_url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-pc-windows-msvc.zip",
+    "download_timeout_seconds": 300,
+    "execution_timeout_seconds": 60,
+    "executable_candidate_paths": [
+      "%LOCALAPPDATA%\\MoonYa\\tools\\rg.exe",
+      "rg.exe"
+    ]
+  },
+  "file_operations": {
+    "allowed_roots": [
+      "C:\\Users",
+      "D:\\",
+      "E:\\",
+      "F:\\"
+    ],
+    "blocked_paths": [
+      "C:\\Windows",
+      "C:\\Program Files",
+      "C:\\Program Files (x86)",
+      "C:\\ProgramData",
+      "C:\\System Volume Information"
+    ],
+    "max_file_size_mb": 10,
+    "enable_delete": true
+  },
+  "app_search": {
+    "enabled": true,
+    "search_paths": [ "start_menu", "desktop", "system_path" ]
+  },
+  "app_install_sources": {
+    "7-Zip": {
+      "download_url": "https://www.7-zip.org/a/7z2301-x64.exe",
+      "install_args": "/S",
+      "verify_executable": "7z.exe"
+    },
+    "Notepad++": {
+      "download_url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.6.0/npp.8.6.0.Installer.x64.exe",
+      "install_args": "/S",
+      "verify_executable": "notepad++.exe"
+    },
+    "VSCode": {
+      "download_url": "https://update.code.visualstudio.com/latest/win32-x64/stable",
+      "install_args": "/verysilent /norestart",
+      "verify_executable": "Code.exe"
+    },
+    "Python": {
+      "download_url": "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe",
+      "install_args": "/quiet InstallAllUsers=1 PrependPath=1",
+      "verify_executable": "python.exe"
+    },
+    "Git": {
+      "download_url": "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe",
+      "install_args": "/verysilent /norestart",
+      "verify_executable": "git.exe"
+    }
+  },
+  "execution_tools": {
+    "risk_rules": {
+      "high": [
+        {
+          "name": "RmRf",
+          "description": "递归强制删除目录（rm -rf）",
+          "regex": [ "rm\\s+-rf\\s+", "rm\\s+-r\\s+-f\\s+", "rm\\s+-f\\s+-r\\s+" ],
+          "keywords": [ "rm -rf", "rm -r -f", "rm -f -r" ]
+        },
+        {
+          "name": "FormatDisk",
+          "description": "格式化磁盘",
+          "regex": [ "format\\s+[a-zA-Z]:", "format\\s+/FS:", "format\\s+/Q" ],
+          "keywords": [ "format c:", "format d:", "format /fs", "format /q" ]
+        },
+        {
+          "name": "DelForceRecursive",
+          "description": "强制递归删除文件（del /f /s）",
+          "regex": [ "del\\s+/f\\s+/s", "del\\s+/s\\s+/f", "del\\s+/f\\s+/s\\s+/q" ],
+          "keywords": [ "del /f /s", "del /s /f", "del /f /s /q" ]
+        },
+        {
+          "name": "RdForceRecursive",
+          "description": "强制递归删除目录（rd /s /q）",
+          "regex": [ "rd\\s+/s\\s+/q", "rd\\s+/q\\s+/s" ],
+          "keywords": [ "rd /s /q", "rd /q /s", "rmdir /s /q" ]
+        },
+        {
+          "name": "DiskPart",
+          "description": "磁盘分区管理工具",
+          "regex": [ "diskpart" ],
+          "keywords": [ "diskpart" ]
+        },
+        {
+          "name": "Shutdown",
+          "description": "关机/重启命令",
+          "regex": [ "shutdown\\s+/s", "shutdown\\s+/r", "shutdown\\s+/l", "shutdown\\s+/p", "shutdown\\s+/h" ],
+          "keywords": [ "shutdown /s", "shutdown /r", "shutdown /l", "shutdown /p", "shutdown /h", "shutdown -s", "shutdown -r" ]
+        },
+        {
+          "name": "RegistryEdit",
+          "description": "注册表编辑操作",
+          "regex": [ "reg\\s+(delete|add|import|export|load|unload)", "regedit\\s+/s" ],
+          "keywords": [ "reg delete", "reg add", "reg import", "reg export", "reg load", "reg unload", "regedit /s" ]
+        },
+        {
+          "name": "BootConfig",
+          "description": "修改启动配置（bcdedit）",
+          "regex": [ "bcdedit\\s+/set", "bcdedit\\s+/delete", "bcdedit\\s+/import", "bcdedit\\s+/export" ],
+          "keywords": [ "bcdedit /set", "bcdedit /delete", "bcdedit /import", "bcdedit /export" ]
+        },
+        {
+          "name": "TakeownIcacls",
+          "description": "获取文件所有权并修改权限",
+          "regex": [ "takeown\\s+/f", "icacls\\s+\\S+\\s+/grant", "icacls\\s+\\S+\\s+/deny", "icacls\\s+\\S+\\s+/setowner" ],
+          "keywords": [ "takeown /f", "icacls /grant", "icacls /deny", "icacls /setowner" ]
+        }
+      ],
+      "medium": [
+        {
+          "name": "NetworkRequest",
+          "description": "发起网络请求",
+          "regex": [ "curl\\s+", "wget\\s+", "Invoke-WebRequest\\s+", "Invoke-RestMethod\\s+", "iwr\\s+" ],
+          "keywords": [ "curl", "wget", "Invoke-WebRequest", "Invoke-RestMethod", "iwr" ]
+        },
+        {
+          "name": "ProcessKill",
+          "description": "终止进程",
+          "regex": [ "taskkill\\s+", "Stop-Process\\s+", "tskill\\s+" ],
+          "keywords": [ "taskkill", "Stop-Process", "tskill", "kill" ]
+        },
+        {
+          "name": "FileMoveRename",
+          "description": "移动/重命名文件",
+          "regex": [ "\\bmove\\s+\\S+\\s+\\S+", "\\bren\\s+\\S+\\s+\\S+", "\\brename\\s+\\S+\\s+\\S+", "Move-Item\\s+" ],
+          "keywords": [ "move ", "ren ", "rename ", "Move-Item" ]
+        },
+        {
+          "name": "ExecPolicyChange",
+          "description": "修改 PowerShell 执行策略",
+          "regex": [ "Set-ExecutionPolicy\\s+" ],
+          "keywords": [ "Set-ExecutionPolicy" ]
+        },
+        {
+          "name": "ServiceControl",
+          "description": "启动/停止系统服务",
+          "regex": [ "sc\\s+(start|stop|config|delete)", "net\\s+(start|stop)\\s+" ],
+          "keywords": [ "sc start", "sc stop", "sc config", "sc delete", "net start", "net stop" ]
+        },
+        {
+          "name": "EnvVarChange",
+          "description": "修改环境变量",
+          "regex": [ "setx\\s+", "set\\s+\\w+=.*\\%", "\\[Environment\\]::SetEnvironmentVariable" ],
+          "keywords": [ "setx", "SetEnvironmentVariable" ]
+        },
+        {
+          "name": "ServiceInstall",
+          "description": "安装/卸载系统服务",
+          "regex": [ "sc\\s+(create|delete)\\s+", "New-Service\\s+", "Remove-Service\\s+" ],
+          "keywords": [ "sc create", "sc delete", "New-Service", "Remove-Service" ]
+        }
+      ],
+      "low": [
+        {
+          "name": "InfoQuery",
+          "description": "系统信息查询",
+          "regex": [ "\\becho\\s+", "\\bdir\\s+", "\\btype\\s+", "\\bwhere\\s+", "\\bwhoami\\b", "\\bhostname\\b" ],
+          "keywords": [ "echo", "dir", "type", "where", "whoami", "hostname" ]
+        },
+        {
+          "name": "VersionCheck",
+          "description": "工具版本检查",
+          "regex": [ "python\\s+--version", "node\\s+--version", "git\\s+--version", "npm\\s+--version", "pip\\s+--version", "dotnet\\s+--version" ],
+          "keywords": [ "--version", "-v" ]
+        },
+        {
+          "name": "SysInfo",
+          "description": "系统信息命令",
+          "regex": [ "\\bsysteminfo\\b", "\\bver\\b", "\\bipconfig\\b", "\\bnetstat\\b", "\\btasklist\\b" ],
+          "keywords": [ "systeminfo", "ver", "ipconfig", "netstat", "tasklist" ]
+        },
+        {
+          "name": "HelpCommand",
+          "description": "帮助文档命令",
+          "regex": [ "\\bhelp\\s+", "\\bman\\s+", "/\\?", "-\\?-", "--help" ],
+          "keywords": [ "help", "/?", "--help", "-h" ]
+        }
+      ]
+    },
+    "sandbox": {
+      "allowed_paths": [ "C:\\Users", "D:\\", "E:\\", "F:\\" ],
+      "network_enabled": false,
+      "max_cpu_time_sec": 30,
+      "max_memory_mb": 512,
+      "temp_root": "sandbox_temp",
+      "python_timeout_sec": 30,
+      "command_timeout_sec": 60
+    }
+  },
+  "browser_automation": {
+    "loopback_host": "127.0.0.1",
+    "port": 58905,
+    "trusted_domains": [],
+    "blocked_domains": [],
+    "chromium_executable_path": "",
+    "chromium_candidate_paths": [
+      "chorme\\chrome.exe",
+      "chrome\\chrome.exe",
+      "%PROGRAMFILES%\\Google\\Chrome\\Application\\chrome.exe",
+      "%PROGRAMFILES(X86)%\\Google\\Chrome\\Application\\chrome.exe",
+      "%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe",
+      "%PROGRAMFILES%\\Microsoft\\Edge\\Application\\msedge.exe",
+      "%PROGRAMFILES(X86)%\\Microsoft\\Edge\\Application\\msedge.exe"
+    ],
+    "headless": false,
+    "auto_download_chromium": false,
+    "default_timeout_ms": 30000,
+    "element_timeout_ms": 8000,
+    "viewport_width": 1280,
+    "viewport_height": 800,
+    "click_initial_delay_ms": 300,
+    "network_idle_timeout_ms": 6000,
+    "network_idle_time_ms": 500,
+    "dom_stable_max_wait_ms": 6000,
+    "dom_stable_threshold_ms": 1500,
+    "dom_stable_poll_ms": 200,
+    "mutation_stable_ms": 300,
+    "mutation_timeout_ms": 5000,
+    "frame_stable_ms": 500,
+    "frame_stable_max_wait_ms": 2500,
+    "frame_retry_count": 3,
+    "per_document_element_limit": 2000,
+    "max_returned_elements": 160,
+    "page_text_limit": 8000,
+    "default_wait_ms": 1000,
+    "default_scroll_amount": 500,
+    "relay_timeout_ms": 70000,
+    "shutdown_timeout_ms": 10000,
+    "cleanup_delay_ms": 500,
+    "download_directory": "%USERPROFILE%\\Downloads",
+    "diagnostics_file": "%LOCALAPPDATA%\\MoonYa\\logs\\browser-frame-diagnostics.log"
+  }
+}

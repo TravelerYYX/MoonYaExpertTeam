@@ -1,0 +1,7 @@
+# MoonYa Pachong 依赖
+# 如果尚未安装，请先在父目录运行:
+#   cd .. && pip install -e .
+
+crawl4ai>=0.8.0
+aiohttp>=3.11.0
+jsbeautifier>=1.15.0

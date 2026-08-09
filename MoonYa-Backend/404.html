@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>未找到页面</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; display: grid; place-items: center; font-family: system-ui, sans-serif; background: #fff; }
+        main { text-align: center; padding: 24px; }
+        .avatar { width: 96px; height: 96px; margin: 0 auto 24px; border-radius: 50%; overflow: hidden; background: #cce7ff; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        h1 { margin: 0 0 12px; color: #596273; font-size: 24px; font-weight: 500; }
+        p { margin: 0 0 32px; color: #737d8f; }
+        nav { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+        button, a { min-width: 132px; padding: 12px 24px; border-radius: 8px; font: inherit; cursor: pointer; text-decoration: none; }
+        button { border: 1px solid #1677ff; color: #fff; background: #1677ff; }
+        a { border: 1px solid #c8ced8; color: #2f3745; background: #fff; }
+        button:hover, button:focus-visible { background: #4096ff; }
+        a:hover, a:focus-visible { color: #1677ff; border-color: #1677ff; }
+    </style>
+</head>
+<body>
+    <main>
+        <!-- 头像 -->
+        <div class="avatar">
+            <img src="/icon.png" 
+                 alt="头像" 
+                 >
+        </div>
+        
+        <!-- 标题 -->
+        <h1>未找到页面</h1>
+        
+        <!-- 描述文字 -->
+        <p>页面不存在，请确认网址是否正确。</p>
+        
+        <!-- 按钮组 -->
+        <nav>
+            <!-- 刷新页面按钮 -->
+            <button onclick="location.reload()">
+                刷新页面
+            </button>
+            <!-- 返回首页按钮 -->
+            <a href="/">
+                返回首页
+            </a>
+        </nav>
+    </main>
+</body>
+</html>

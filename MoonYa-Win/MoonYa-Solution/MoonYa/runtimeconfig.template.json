@@ -1,0 +1,10 @@
+{
+  "runtimeOptions": {
+    "configProperties": {
+      "CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS": true,
+      "System.Globalization.Invariant": false,
+      "System.Runtime.TieredCompilation": true
+    },
+    "rollForward": "LatestMajor"
+  }
+}

@@ -1,0 +1,4 @@
+﻿Found 3 log records
+  #99 action=delete_model_persona target= details={"id":5,"scene":"normal","persona_name":"API娴嬭瘯浜烘牸"}
+  #98 action=update_model_persona target= details={"id":5,"updated_fields":["is_active"]}
+  #97 action=create_model_persona target= details={"id":"5","scene":"normal","persona_name":"API娴嬭瘯浜烘牸","is_active":1}

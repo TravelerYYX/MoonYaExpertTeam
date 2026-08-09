@@ -1,0 +1,13 @@
+# MoonYa Python 后端统一依赖
+# 安装: pip install -r requirements.txt
+# 额外步骤: playwright install chromium
+
+crawl4ai>=0.8.0
+aiohttp>=3.11.0
+jsbeautifier>=1.15.0
+
+# File Agent Office 运行时（由 MoonYa 安装/升级流程统一安装，Agent 不得临时 pip install）
+python-docx==1.2.0
+openpyxl==3.1.5
+python-pptx==1.0.2
+pypdf==6.14.2

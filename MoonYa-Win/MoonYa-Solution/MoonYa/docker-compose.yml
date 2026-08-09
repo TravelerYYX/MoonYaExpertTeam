@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: moonya-app
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - moonya_uploads:/var/www/html/uploads
+      - moonya_downloads:/var/www/html/downloads
+      - moonya_logs:/var/www/html/admin/logs
+    environment:
+      DB_HOST: db
+      DB_NAME: ai_system
+      DB_USER: root
+      DB_PASS: ${DB_PASSWORD:-moonya123}
+    restart: unless-stopped
+
+  db:
+    image: mysql:5.7
+    container_name: moonya-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-moonya123}
+      MYSQL_DATABASE: ai_system
+    volumes:
+      - moonya_db_data:/var/lib/mysql
+      - ./wwwroot/sql/数据库.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  moonya_db_data:
+  moonya_uploads:
+  moonya_downloads:
+  moonya_logs:

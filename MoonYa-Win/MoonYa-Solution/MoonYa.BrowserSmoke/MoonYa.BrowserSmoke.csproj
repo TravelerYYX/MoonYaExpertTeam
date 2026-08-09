@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="PuppeteerSharp" Version="20.0.0" />
+    <Compile Include="..\MoonYa\Services\BrowserAutomationService.cs" Link="BrowserAutomationService.cs" />
+    <Compile Include="..\MoonYa\Services\BrowserProtocol.cs" Link="BrowserProtocol.cs" />
+    <Compile Include="..\MoonYa\Services\BrowserSecurityGate.cs" Link="BrowserSecurityGate.cs" />
+    <Compile Include="..\MoonYa\Services\BrowserApiServer.cs" Link="BrowserApiServer.cs" />
+  </ItemGroup>
+</Project>

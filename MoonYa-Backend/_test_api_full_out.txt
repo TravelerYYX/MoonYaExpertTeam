@@ -1,0 +1,17 @@
+﻿Got token
+1. GET list: code=200
+   count: 3
+2. CREATE: code=200
+   response: {"success":true,"data":{"id":"5","message":"浜烘牸鍒涘缓鎴愬姛"}}
+   new id: 5
+3. GET list (after create): code=200
+   count: 4
+4. UPDATE is_active=0: code=200
+   response: {"success":true,"data":{"message":"浜烘牸鏇存柊鎴愬姛"}}
+5. After UPDATE, found record is_active: 0
+6. DELETE: code=200
+   response: {"success":true,"data":{"message":"浜烘牸鍒犻櫎鎴愬姛"}}
+7. After DELETE, count: 3
+8. Without auth: code=401 (should be 401)
+9. CREATE with invalid applicable_models: code=400 (should be 400)
+   response: {"success":false,"error":"閫傜敤妯″瀷锛坅pplicable_models锛夊繀椤绘槸闈炵┖ JSON 鏁扮粍"}

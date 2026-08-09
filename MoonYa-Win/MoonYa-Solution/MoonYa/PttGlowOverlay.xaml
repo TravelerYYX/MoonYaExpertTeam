@@ -1,0 +1,351 @@
+<Window x:Class="MoonYa.PttGlowOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PttGlowOverlay"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        ResizeMode="NoResize"
+        ShowActivated="False"
+        Focusable="False"
+        IsTabStop="False">
+
+    <Window.Resources>
+        <!-- 边缘光效厚度 -->
+        <system:Double x:Key="GlowThicknessValue"
+                       xmlns:system="clr-namespace:System;assembly=mscorlib">48</system:Double>
+
+        <!-- 舒适的粉蓝紫渐变配色（低饱和、高明度） -->
+        <Color x:Key="GlowCyan">#A5F3FC</Color>
+        <Color x:Key="GlowBlueSoft">#93C5FD</Color>
+        <Color x:Key="GlowLavender">#C4B5FD</Color>
+        <Color x:Key="GlowPurpleSoft">#D8B4FE</Color>
+        <Color x:Key="GlowPink">#F9A8D4</Color>
+
+        <!-- 顶部渐变：左青 → 中紫 → 右粉，整体柔和 -->
+        <LinearGradientBrush x:Key="TopGlowBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="{StaticResource GlowCyan}" Offset="0.0" />
+            <GradientStop Color="{StaticResource GlowBlueSoft}" Offset="0.22" />
+            <GradientStop Color="{StaticResource GlowLavender}" Offset="0.50" />
+            <GradientStop Color="{StaticResource GlowPurpleSoft}" Offset="0.78" />
+            <GradientStop Color="{StaticResource GlowPink}" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 底部渐变：与顶部同向 -->
+        <LinearGradientBrush x:Key="BottomGlowBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="{StaticResource GlowCyan}" Offset="0.0" />
+            <GradientStop Color="{StaticResource GlowBlueSoft}" Offset="0.22" />
+            <GradientStop Color="{StaticResource GlowLavender}" Offset="0.50" />
+            <GradientStop Color="{StaticResource GlowPurpleSoft}" Offset="0.78" />
+            <GradientStop Color="{StaticResource GlowPink}" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 左侧渐变：青色到蓝色，向中心柔和淡出 -->
+        <LinearGradientBrush x:Key="LeftGlowBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="{StaticResource GlowCyan}" Offset="0.0" />
+            <GradientStop Color="{StaticResource GlowBlueSoft}" Offset="0.40" />
+            <GradientStop Color="Transparent" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 右侧渐变：淡紫粉色，向中心柔和淡出 -->
+        <LinearGradientBrush x:Key="RightGlowBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="Transparent" Offset="0.0" />
+            <GradientStop Color="{StaticResource GlowPurpleSoft}" Offset="0.40" />
+            <GradientStop Color="{StaticResource GlowPink}" Offset="0.85" />
+            <GradientStop Color="{StaticResource GlowPink}" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 全屏水波填充渐变：底部颜色浓，向上渐淡 -->
+        <LinearGradientBrush x:Key="WaterFillBrush" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="{StaticResource GlowCyan}" Offset="0.0" />
+            <GradientStop Color="{StaticResource GlowBlueSoft}" Offset="0.15" />
+            <GradientStop Color="{StaticResource GlowLavender}" Offset="0.35" />
+            <GradientStop Color="{StaticResource GlowPurpleSoft}" Offset="0.55" />
+            <GradientStop Color="{StaticResource GlowPink}" Offset="0.75" />
+            <GradientStop Color="Transparent" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 淡出遮罩：更长的过渡，弱化硬边 -->
+        <LinearGradientBrush x:Key="TopFadeMask" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="White" Offset="0.0" />
+            <GradientStop Color="White" Offset="0.25" />
+            <GradientStop Color="Transparent" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="BottomFadeMask" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="White" Offset="0.0" />
+            <GradientStop Color="White" Offset="0.25" />
+            <GradientStop Color="Transparent" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="LeftFadeMask" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="White" Offset="0.0" />
+            <GradientStop Color="White" Offset="0.25" />
+            <GradientStop Color="Transparent" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="RightFadeMask" StartPoint="1,0" EndPoint="0,0">
+            <GradientStop Color="White" Offset="0.0" />
+            <GradientStop Color="White" Offset="0.25" />
+            <GradientStop Color="Transparent" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 水波入场：全屏水波从底部向上铺满，随后渐变为四边光效 -->
+        <Storyboard x:Key="WaterEntranceStoryboard">
+            <!-- 全屏水波：从底部向上铺开 -->
+            <DoubleAnimation Storyboard.TargetName="WaterFill"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.0"
+                             To="0.55"
+                             Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="WaterFillScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="0.0"
+                             To="1.0"
+                             Duration="0:0:0.9">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <!-- 水波逐渐退去，四边光效接棒 -->
+            <DoubleAnimation Storyboard.TargetName="WaterFill"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.55"
+                             To="0.0"
+                             BeginTime="0:0:0.75"
+                             Duration="0:0:0.55">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseInOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <!-- 底部边缘随水波退去亮起 -->
+            <DoubleAnimation Storyboard.TargetName="BottomGlow"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.0"
+                             To="1.0"
+                             BeginTime="0:0:0.6"
+                             Duration="0:0:0.5">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <!-- 两侧从底部向上“涨”起来 -->
+            <DoubleAnimation Storyboard.TargetName="LeftGlowScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="0.0"
+                             To="1.0"
+                             BeginTime="0:0:0.7"
+                             Duration="0:0:0.7">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="RightGlowScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="0.0"
+                             To="1.0"
+                             BeginTime="0:0:0.7"
+                             Duration="0:0:0.7">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="LeftGlow"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.0"
+                             To="1.0"
+                             BeginTime="0:0:0.65"
+                             Duration="0:0:0.55">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="RightGlow"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.0"
+                             To="1.0"
+                             BeginTime="0:0:0.65"
+                             Duration="0:0:0.55">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <!-- 顶部边缘最后亮起，完成四边框架 -->
+            <DoubleAnimation Storyboard.TargetName="TopGlow"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.0"
+                             To="1.0"
+                             BeginTime="0:0:1.1"
+                             Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- 淡出动画 -->
+        <Storyboard x:Key="FadeOutStoryboard">
+            <DoubleAnimation Storyboard.TargetName="GlowRoot"
+                             Storyboard.TargetProperty="Opacity"
+                             To="0.0"
+                             Duration="0:0:0.35">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Computer Use 顶部状态徽标 -->
+        <LinearGradientBrush x:Key="CuBadgeBrush"
+                             StartPoint="0,0"
+                             EndPoint="1,0"
+                             Opacity="0.85">
+            <GradientStop Color="{StaticResource GlowCyan}" Offset="0.0" />
+            <GradientStop Color="{StaticResource GlowLavender}" Offset="0.5" />
+            <GradientStop Color="{StaticResource GlowPink}" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <Storyboard x:Key="CuBadgeFadeInStoryboard">
+            <DoubleAnimation Storyboard.TargetName="CuBadge"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.0"
+                             To="1.0"
+                             Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Key="CuBadgeFadeOutStoryboard">
+            <DoubleAnimation Storyboard.TargetName="CuBadge"
+                             Storyboard.TargetProperty="Opacity"
+                             To="0.0"
+                             Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </Window.Resources>
+
+    <!-- 光效容器：声波响应时整体缩放，缩放中心位于底部中央 -->
+    <Grid x:Name="GlowRoot"
+          IsHitTestVisible="False"
+          Opacity="1.0"
+          RenderTransformOrigin="0.5,1">
+        <Grid.RenderTransform>
+            <ScaleTransform x:Name="GlowScale" ScaleX="1" ScaleY="1" />
+        </Grid.RenderTransform>
+
+        <!-- 全屏水波填充：入场时从底部向上铺开，之后淡出 -->
+        <Rectangle x:Name="WaterFill"
+                   Fill="{StaticResource WaterFillBrush}"
+                   Visibility="Collapsed"
+                   Opacity="0.0"
+                   IsHitTestVisible="False"
+                   RenderTransformOrigin="0.5,1">
+            <Rectangle.RenderTransform>
+                <ScaleTransform x:Name="WaterFillScale" ScaleX="1" ScaleY="1" />
+            </Rectangle.RenderTransform>
+        </Rectangle>
+
+        <!-- 顶部边缘：向中心淡出 -->
+        <Border x:Name="TopGlow"
+                Height="{StaticResource GlowThicknessValue}"
+                VerticalAlignment="Top"
+                Background="{StaticResource TopGlowBrush}"
+                OpacityMask="{StaticResource TopFadeMask}"
+                Opacity="0.0"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform x:Name="TopGlowScale" ScaleX="1" ScaleY="1" />
+            </Border.RenderTransform>
+            <Border.Effect>
+                <BlurEffect Radius="56" />
+            </Border.Effect>
+        </Border>
+
+        <!-- 底部边缘：向中心淡出 -->
+        <Border x:Name="BottomGlow"
+                Height="{StaticResource GlowThicknessValue}"
+                VerticalAlignment="Bottom"
+                Background="{StaticResource BottomGlowBrush}"
+                OpacityMask="{StaticResource BottomFadeMask}"
+                Opacity="0.0"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform x:Name="BottomGlowScale" ScaleX="1" ScaleY="1" />
+            </Border.RenderTransform>
+            <Border.Effect>
+                <BlurEffect Radius="56" />
+            </Border.Effect>
+        </Border>
+
+        <!-- 左侧边缘：向中心淡出；缩放原点在底部，模拟水从下往上涨 -->
+        <Border x:Name="LeftGlow"
+                Width="{StaticResource GlowThicknessValue}"
+                HorizontalAlignment="Left"
+                Background="{StaticResource LeftGlowBrush}"
+                OpacityMask="{StaticResource LeftFadeMask}"
+                Opacity="0.0"
+                RenderTransformOrigin="0.5,1">
+            <Border.RenderTransform>
+                <ScaleTransform x:Name="LeftGlowScale" ScaleX="1" ScaleY="1" />
+            </Border.RenderTransform>
+            <Border.Effect>
+                <BlurEffect Radius="56" />
+            </Border.Effect>
+        </Border>
+
+        <!-- 右侧边缘：向中心淡出；缩放原点在底部 -->
+        <Border x:Name="RightGlow"
+                Width="{StaticResource GlowThicknessValue}"
+                HorizontalAlignment="Right"
+                Background="{StaticResource RightGlowBrush}"
+                OpacityMask="{StaticResource RightFadeMask}"
+                Opacity="0.0"
+                RenderTransformOrigin="0.5,1">
+            <Border.RenderTransform>
+                <ScaleTransform x:Name="RightGlowScale" ScaleX="1" ScaleY="1" />
+            </Border.RenderTransform>
+            <Border.Effect>
+                <BlurEffect Radius="56" />
+            </Border.Effect>
+        </Border>
+
+        <Grid x:Name="CuBadge"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Top"
+              Margin="0,24,0,0"
+              Opacity="0"
+              Visibility="Collapsed"
+              IsHitTestVisible="False">
+            <Border CornerRadius="20"
+                    Padding="16,8,16,8"
+                    Background="{StaticResource CuBadgeBrush}">
+                <Border.Effect>
+                    <BlurEffect Radius="20" />
+                </Border.Effect>
+            </Border>
+            <Border CornerRadius="20"
+                    Padding="16,8,16,8"
+                    Background="{StaticResource CuBadgeBrush}">
+                <TextBlock Text="MoonYa正在操作电脑"
+                           Foreground="White"
+                           FontSize="15"
+                           FontWeight="SemiBold" />
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

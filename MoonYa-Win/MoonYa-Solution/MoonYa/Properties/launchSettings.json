@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MoonYa": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

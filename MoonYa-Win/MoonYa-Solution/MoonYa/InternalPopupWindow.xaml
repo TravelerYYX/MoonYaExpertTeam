@@ -1,0 +1,15 @@
+<Window x:Class="MoonYa.InternalPopupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MoonYa"
+        xmlns:cef="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+        Title="MoonYa"
+        Width="1100" Height="780"
+        MinWidth="640" MinHeight="480"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F7FA">
+    <Grid>
+        <cef:ChromiumWebBrowser x:Name="PopupWebView"
+                                Address="about:blank" />
+    </Grid>
+</Window>

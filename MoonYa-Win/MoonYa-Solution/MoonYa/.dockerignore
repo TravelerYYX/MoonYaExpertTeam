@@ -1,0 +1,60 @@
+# Git
+.git/
+.gitignore
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker-entrypoint.sh
+
+# Windows (WPF desktop app, not needed in container)
+bin/
+obj/
+*.csproj
+*.csproj.user
+*.sln
+*.slnx
+*.xaml
+*.xaml.cs
+App.xaml
+App.xaml.cs
+MainWindow.xaml
+MainWindow.xaml.cs
+TrayMenuWindow.xaml
+app.manifest
+*.ico
+*.pdb
+
+# Python runtime (embedded in desktop app)
+python/
+
+# Uploads & downloads (use volumes)
+wwwroot/uploads/
+wwwroot/downloads/
+wwwroot/video_gen/uploads/
+wwwroot/creation/temp/
+
+# Logs
+wwwroot/admin/logs/
+*.log
+
+# Test & debug files
+wwwroot/test*.php
+wwwroot/debug*.php
+wwwroot/diagnose*.php
+wwwroot/check_*.php
+wwwroot/api_simple_test.php
+wwwroot/api_debug.log
+
+# Old migrations (not needed at runtime)
+wwwroot/老旧数据库初始划脚本/
+
+# Temp
+*/temp/
+*.tmp

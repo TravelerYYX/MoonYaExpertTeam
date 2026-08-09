@@ -1,0 +1,188 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>MoonYa</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <Platform Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'">x64</Platform>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WindowsSdkPackageRevision>0</WindowsSdkPackageRevision>
+  </PropertyGroup>
+
+  <!-- Publish Properties -->
+  <PropertyGroup>
+    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    <PublishTrimmed>False</PublishTrimmed>
+    <ApplicationIcon>yax_rounded.ico</ApplicationIcon>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <PlatformTarget Condition="'$(Platform)' == 'x86'">x86</PlatformTarget>
+    <PlatformTarget Condition="'$(Platform)' == 'x64'">x64</PlatformTarget>
+    <PlatformTarget Condition="'$(Platform)' == 'ARM64'">ARM64</PlatformTarget>
+    <CefRuntimeFolder Condition="'$(Platform)' == 'x86'">win-x86</CefRuntimeFolder>
+    <CefRuntimeFolder Condition="'$(Platform)' == 'x64'">win-x64</CefRuntimeFolder>
+    <CefRuntimeFolder Condition="'$(Platform)' == 'ARM64'">win-arm64</CefRuntimeFolder>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="147.0.100" />
+    <PackageReference Include="ModelContextProtocol" Version="1.4.1" />
+    <PackageReference Include="System.Speech" Version="10.0.9" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.10" />
+    <PackageReference Include="PuppeteerSharp" Version="20.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="yax_rounded.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\fnn-q.png" />
+    <Resource Include="Assets\pet_base.png" />
+    <Resource Include="Assets\pet_head.png" />
+    <Resource Include="Assets\pet_head_ec.png" />
+    <Resource Include="Assets\pet_head_mc.png" />
+    <Resource Include="Assets\pet_side_l.png" />
+    <Resource Include="Assets\pet_side_r.png" />
+    <Resource Include="Assets\pet_side_l_a.png" />
+    <Resource Include="Assets\pet_side_l_b.png" />
+    <Resource Include="Assets\pet_side_r_a.png" />
+    <Resource Include="Assets\pet_side_r_b.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\pet_bubbles.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="launcher_config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="python\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <LinkBase>python\</LinkBase>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\MoonYa-Python\main.py" Link="python_service\main.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\..\..\MoonYa-Python\service_config.json" Link="python_service\service_config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\..\..\MoonYa-Python\requirements.txt" Link="python_service\requirements.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\..\..\MoonYa-Python\web_crawler\*.py" Link="python_service\web_crawler\%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\..\..\MoonYa-Python\web_crawler\requirements.txt" Link="python_service\web_crawler\requirements.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\..\..\MoonYa-Python\web_search\*.py" Link="python_service\web_search\%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- ── 复制 PHP 后端文件 (MoonYa-Backend) 到输出目录的 wwwroot ── -->
+  <Target Name="CopyWwwroot" AfterTargets="Build">
+    <RemoveDir Directories="$(OutDir)wwwroot\admin\logs;$(OutDir)wwwroot\downloads;$(OutDir)wwwroot\uploads;$(OutDir)wwwroot\tests" />
+    <ItemGroup>
+      <_WwwrootFiles
+        Include="$(ProjectDir)..\..\..\MoonYa-Backend\**\*"
+        Exclude="$(ProjectDir)..\..\..\MoonYa-Backend\admin\logs\**\*;$(ProjectDir)..\..\..\MoonYa-Backend\downloads\**\*;$(ProjectDir)..\..\..\MoonYa-Backend\uploads\**\*;$(ProjectDir)..\..\..\MoonYa-Backend\tests\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_WwwrootFiles)" DestinationFiles="$(OutDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="False" OverwriteReadOnlyFiles="True" />
+    <WriteLinesToFile
+      File="$(OutDir)cu-build.json"
+      Lines="{&quot;protocol_version&quot;:&quot;cu-three-layer-v3&quot;,&quot;configuration&quot;:&quot;$(Configuration)&quot;,&quot;platform&quot;:&quot;$(Platform)&quot;}"
+      Overwrite="True" />
+  </Target>
+
+  <Target Name="PrepareCuPublishRuntime" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+    <RemoveDir Directories="$(PublishDir)wwwroot\admin\logs;$(PublishDir)wwwroot\downloads;$(PublishDir)wwwroot\uploads;$(PublishDir)wwwroot\tests" />
+    <ItemGroup>
+      <_PublishedWwwrootFiles
+        Include="$(ProjectDir)..\..\..\MoonYa-Backend\**\*"
+        Exclude="$(ProjectDir)..\..\..\MoonYa-Backend\admin\logs\**\*;$(ProjectDir)..\..\..\MoonYa-Backend\downloads\**\*;$(ProjectDir)..\..\..\MoonYa-Backend\uploads\**\*;$(ProjectDir)..\..\..\MoonYa-Backend\tests\**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishedWwwrootFiles)"
+      DestinationFiles="$(PublishDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)"
+      SkipUnchangedFiles="False"
+      OverwriteReadOnlyFiles="True" />
+    <WriteLinesToFile
+      File="$(PublishDir)cu-build.json"
+      Lines="{&quot;protocol_version&quot;:&quot;cu-three-layer-v3&quot;,&quot;configuration&quot;:&quot;$(Configuration)&quot;,&quot;platform&quot;:&quot;$(Platform)&quot;}"
+      Overwrite="True" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; { $src = '$(ProjectDir)..\..\..\MoonYa-Backend\Services\AIAssistant.php'; $dst = '$(PublishDir)wwwroot\Services\AIAssistant.php'; if (!(Test-Path -LiteralPath $dst)) { throw 'Missing published AIAssistant.php' }; if ((Get-FileHash -Algorithm SHA256 -LiteralPath $src).Hash -ne (Get-FileHash -Algorithm SHA256 -LiteralPath $dst).Hash) { throw 'Published MoonYa backend coordinator hash mismatch' } }&quot;" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)scripts\VerifyTeamRuntime.ps1&quot; -ProjectDirectory &quot;$(ProjectDir).&quot; -OutputDirectory &quot;$(PublishDir).&quot;" />
+  </Target>
+
+  <Target Name="VerifyWwwrootCoordinatorHash" AfterTargets="CopyWwwroot">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; { $src = '$(ProjectDir)..\..\..\MoonYa-Backend\Services\AIAssistant.php'; $dst = '$(OutDir)wwwroot\Services\AIAssistant.php'; if (!(Test-Path -LiteralPath $dst)) { throw 'Missing deployed AIAssistant.php' }; if ((Get-FileHash -Algorithm SHA256 -LiteralPath $src).Hash -ne (Get-FileHash -Algorithm SHA256 -LiteralPath $dst).Hash) { throw 'MoonYa backend coordinator hash mismatch' } }&quot;" />
+  </Target>
+
+  <Target Name="VerifyMultiAgentRuntimeHashes" AfterTargets="CopyWwwroot">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)scripts\VerifyTeamRuntime.ps1&quot; -ProjectDirectory &quot;$(ProjectDir).&quot; -OutputDirectory &quot;$(OutDir).&quot;" />
+  </Target>
+
+  <!-- ── 复制 CefSharp native 文件到 bin 根目录 ──
+       修复: CefSharp.Wpf.NETCore 147 + .NET 8 + dotnet 10 SDK 会把 libcef.dll /
+       Ijwhost.dll / CefSharp.BrowserSubprocess.exe 等 native 文件放到 win-x64\
+       子目录，但 Windows DLL 加载器不会跨子目录搜索 → 运行时抛
+       "Could not load file or assembly '...CefSharp.Core.Runtime.dll'. 找不到指定的模块。"
+       解决办法：构建后把 win-x64\* 平铺到 $(OutDir) 根目录。
+  -->
+  <Target Name="FlattenCefSharpNative" AfterTargets="AfterBuild" Condition="Exists('$(OutDir)$(CefRuntimeFolder)')">
+    <ItemGroup>
+      <_CefNativeFiles Include="$(OutDir)$(CefRuntimeFolder)\**\*" Exclude="$(OutDir)$(CefRuntimeFolder)\**\locales\**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_CefNativeFiles)"
+          DestinationFiles="$(OutDir)%(RecursiveDir)%(Filename)%(Extension)"
+          SkipUnchangedFiles="True"
+          OverwriteReadOnlyFiles="True" />
+  </Target>
+
+</Project>

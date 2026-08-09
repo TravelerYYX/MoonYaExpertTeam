@@ -1,0 +1,18 @@
+{
+  "host": "127.0.0.1",
+  "crawler_port": 58901,
+  "data_dir": "",
+  "python_service_domain": "",
+  "backend_api_url": "",
+  "search": {
+    "primary_endpoint": "https://html.duckduckgo.com/html/",
+    "fallback_one_url_template": "https://www.baidu.com/s?wd={query}",
+    "fallback_two_url_template": "https://cn.bing.com/search?q={query}&count=10",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+    "primary_timeout_seconds": 15,
+    "fallback_timeout_seconds": 10,
+    "fetch_timeout_seconds": 15,
+    "result_limit": 8,
+    "fetch_content_limit": 6000
+  }
+}

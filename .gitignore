@@ -1,0 +1,51 @@
+# ===== 源码压缩包（不入库）=====
+*.zip
+
+# ===== 数据库导出（含敏感数据，不入库）=====
+数据库/
+*.sql
+
+# ===== 临时脚本 =====
+_*.ps1
+
+# ===== 构建产物 =====
+**/bin/
+**/obj/
+**/runtimes/
+**/packages/
+**/test_results/
+**/publish/
+
+# ===== 依赖目录 =====
+**/node_modules/
+**/vendor/
+
+# ===== Python 缓存 =====
+**/__pycache__/
+*.pyc
+
+# ===== 内嵌运行时 / 捆绑二进制 =====
+**/python/
+**/chorme/
+**/chrome/
+
+# ===== 日志 =====
+**/logs/
+*.log
+
+# ===== 运行时输出 / 用户数据 =====
+**/crawler_output/
+**/runtime/
+**/uploads/
+**/downloads/
+
+# ===== IDE =====
+.vs/
+.idea/
+*.user
+*.suo
+
+# ===== 操作系统 =====
+Thumbs.db
+Desktop.ini
+.DS_Store
