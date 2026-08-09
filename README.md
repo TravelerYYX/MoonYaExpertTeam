@@ -98,25 +98,36 @@ computer_observe  →  computer_interact  →  computer_complete
 
 `target` 必须是语义目标（控件名/业务对象），**禁止提交绝对像素坐标**。这一约束确保操作可验证、可回放、不受 DPI / 分辨率 / 窗口位置影响。
 
-#### 三级操控兜底（GUI 元素级 → 视觉定位 → 像素物理回退）
+#### 三层操控兜底（UIA → GUI → VLM）
 
-桌面操控按精度从高到低分三层，`DesktopComputerService` 编排调度，**模型只提供语义目标，GUI/VLM 坐标永远不逃逸出进程**：
+桌面操控按精度从高到低分三层，`DesktopComputerService` 编排调度，**模型只提供语义目标，运行时负责 UIA/GUI/VLM 三层，坐标永远不逃逸出进程**：
 
 ```
-① UIA GUI 元素级自动化（主路径，最精准）
+① UIA 语义控件层（主路径，最精准）
     UiAutomationService · System.Windows.Automation
-    FindElement → ClickElement / SetText / GetText → Pattern 调用
-    ↓ 元素不可达时
-② VLM 安全视觉定位（SoM 标记 + 两阶段返回 mark_id）
+    FindSemanticElement → ExecuteNative（InvokePattern / ValuePattern / TogglePattern ...）
+    ↓ UIA 未找到语义目标时
+② GUI 物理输入层（遮挡验证 + UIPI/前台守卫）
+    DesktopComputerService.PreparePhysicalTarget → FocusWindow → ExecutePhysical
+    SendInput 物理输入，作用于控件坐标，带遮挡/前台/UIPI 三重验证
+    ↓ GUI 物理输入仍不可用时
+③ VLM 视觉定位层（SoM 标记 + 两阶段返回 mark_id）
     DesktopComputerService.VisualInteract · CreateVisualMarks
-    ↓ 视觉仍不可用时
-③ SendInput 像素物理回退（MouseClick / KeyboardType / KeyPress）
-    ComputerUseService · user32.dll P/Invoke
 ```
 
-##### ① UIA GUI 元素级自动化（主路径）
+每一层失败都会返回结构化 `Failure(layer, method, error_code, message, attempts)`，上层据 `layer` 字段判断走了哪条路径。
 
-`UiAutomationService` 基于 Windows UI Automation API，通过**控件树**和 **Pattern** 操控 GUI 元素——这是月雅专家团的核心创新：**不点坐标，点控件**。
+##### ① UIA 语义控件层（主路径）
+
+`UiAutomationService` 基于 Windows UI Automation API，通过**控件树**和 **Pattern** 操控语义控件——这是月雅专家团的核心创新：**不点坐标，点控件**。
+
+`DesktopComputerService.InteractCore` 的主路径流程：
+
+1. `GetForegroundWindow()` 取真实前台 HWND（不用 UIA FocusedElement，避免 Qt/Chromium 窗口错位）
+2. `AutomationElement.FromHandle(hwnd)` 获取窗口元素
+3. `FindSemanticElement(root, target)` 按语义目标查找控件
+4. `ExecuteNative(element, operation, ...)` 调用对应 Pattern 执行操作
+5. `SemanticState(element)` + `SemanticWindowState(root)` 对比前后状态验证
 
 | API | 作用 |
 | --- | --- |
@@ -127,61 +138,33 @@ computer_observe  →  computer_interact  →  computer_complete
 | `GetText(elementId)` | 优先 `TextPattern.DocumentRange.GetText`，回退 `ValuePattern.Current.Value`，再回退 `element.Current.Name` |
 | `CaptureUiSnapshot(...)` | UI 快照，含控件属性与可用 Pattern |
 
-**支持的 17 种 UIA Pattern**：
+**支持的 17 种 UIA Pattern**：`Invoke` `Toggle` `Value` `Text` `Selection` / `SelectionItem` `Scroll` `RangeValue` `ExpandCollapse` `Grid` / `GridItem` `Table` / `TableItem` `Dock` `Transform` `MultipleView` `Window` `ItemContainer`
 
-| Pattern | 用途 |
-| --- | --- |
-| `Invoke` | 调用按钮/菜单项 |
-| `Toggle` | 切换复选框/单选框 |
-| `Value` | 设置/读取文本框值 |
-| `Text` | 读取富文本内容 |
-| `Selection` / `SelectionItem` | 选择列表/下拉项 |
-| `Scroll` | 滚动区域 |
-| `RangeValue` | 调节滑块/数值范围 |
-| `ExpandCollapse` | 展开/折叠树节点 |
-| `Grid` / `GridItem` | 表格导航 |
-| `Table` / `TableItem` | 表格操作 |
-| `Dock` | 停靠面板 |
-| `Transform` | 移动/缩放/旋转 |
-| `MultipleView` | 切换视图 |
-| `Window` | 窗口操作 |
-| `ItemContainer` | 虚拟容器项管理 |
+**为什么 UIA 是主路径**：精准（直接定位语义控件，不受 DPI/分辨率/窗口位置影响）、可验证（检查真实结果属性，不只看是否抛异常）、可回放（`ElementCache` 缓存 `element_id`）、无副作用（不模拟鼠标移动，不干扰用户当前操作）。
 
-**为什么 UIA 是主路径**：
+##### ② GUI 物理输入层（UIA 失败后的安全物理回退）
 
-- **精准** — 直接定位语义控件，不受 DPI / 分辨率 / 窗口位置影响
-- **可验证** — `ClickElement` 检查真实结果属性，不只看 InvokePattern 是否抛异常
-- **可回放** — 同一 `element_id` 可复用（元素缓存 `ElementCache`）
-- **无副作用** — 不模拟鼠标移动，不干扰用户当前操作
+UIA 未找到语义目标，或 `ExecuteNative` 执行失败时，进入 GUI 物理输入层。这一层**不是盲目点坐标**，而是通过 `ComputerUseService` 的 SendInput 物理输入作用于控件坐标，但带三重安全守卫：
 
-##### ② VLM 安全视觉定位
+| 守卫 | 检查 | 失败结果 |
+| --- | --- | --- |
+| **遮挡验证** | `PreparePhysicalTarget` 检查目标坐标是否被其他窗口遮挡 | `blocked_by_occlusion`，不执行 |
+| **前台验证** | `FocusWindow(hwnd)` 确保目标窗口处于前台 | `foreground_unavailable`，不执行 |
+| **UIPI/UAC 守卫** | 检查物理输入是否被系统接受 | `uipi_or_input_blocked`，**不绕过 UAC/UIPI** |
 
-UIA 元素不可达时（如自绘 UI、跨进程 Chromium 控件），启用视觉定位：
+执行流程：`PreparePhysicalTarget`（遮挡验证 + 安全坐标计算）→ `FocusWindow`（前台验证）→ `ExecutePhysical`（SendInput）→ 标记 `physical_fallback = true`，`layer = "gui"`，上层加强验证。
+
+**与纯 VLM 坐标的区别**：GUI 层的坐标来自 UIA 控件的 `Current.BoundingRectangle`，经过遮挡/前台/UIPI 三重验证，不是视觉猜测的坐标。
+
+##### ③ VLM 视觉定位层（最后兜底）
+
+UIA 与 GUI 均不可用时（如自绘 UI、跨进程 Chromium 控件无 UIA Provider），启用视觉定位：
 
 - 第一阶段：返回归一化候选框 + 标签 + confidence（**不返回屏幕绝对坐标**）
 - 运行时绘制 SoM（Set of Marks）：`CreateVisualMarks` 在截图上画编号方框
 - 第二阶段：返回 `mark_id` + confidence，`VisualInteract` 据此执行
 - confidence < 0.7、窗口变化、快照过期（30 秒租约）、目标不唯一 → 重新观察，最多三次
 - **坐标不逃逸** — GUI/VLM 坐标永远不离开 `DesktopComputerService` 进程
-
-##### ③ SendInput 像素物理回退
-
-UIA 与 VLM 均不可用时，`ComputerUseService` 通过 `user32.dll` 的 `SendInput` API 执行像素级物理操作（`physical_fallback = true`）：
-
-| API | 作用 |
-| --- | --- |
-| `TakeScreenshot(target)` | 截屏（window/screen），Anthropic 规范长边 ≤1568px、总像素 ≤1.15MP |
-| `TakeWindowScreenshot(hwnd)` | 指定窗口截屏（不回退全屏，防止无关窗口成为证据） |
-| `MouseMove(x, y)` | 鼠标移动（绝对坐标模式 `MOUSEEVENTF_ABSOLUTE\|MOVE`） |
-| `MouseClick(x, y, button, click)` | 鼠标点击（single/double，支持 left/right） |
-| `MouseScroll(delta)` | 滚轮滚动 |
-| `MouseDrag(from, to, points)` | 拖拽（支持自定义路径点） |
-| `MouseHold(x, y, button, duration)` | 按住鼠标 |
-| `FocusWindow(hwnd)` | 聚焦窗口 |
-| `KeyboardType(text)` | 键盘输入文本（Unicode 字符） |
-| `KeyPress(keys)` | 组合键（如 `Ctrl+S`） |
-
-> 这一层是**最后的物理手段**，标记 `physical_fallback`，上层会加强验证。
 
 #### 严格安全策略（CuPolicyCatalog）
 
